@@ -16,9 +16,16 @@ export function Posts() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   // replace with useQuery
-  const {data, isLoading} = useQuery("posts", fetchPosts);
+  const {data, isLoading, isError, error} = useQuery("posts", fetchPosts);
 
-  if (isLoading) return <div>...loading</div>;
+  if (isLoading) return <div>...Loading</div>;
+  if (isError)
+    return (
+      <>
+        <h3>Oops, something went wrong </h3>
+        <p>{error.toString()}</p>
+      </>
+    );
 
   return (
     <>
@@ -47,3 +54,9 @@ export function Posts() {
     </>
   );
 }
+
+/*
+isFetching : 아직 fetching이 완료되지 않았음
+isLoading : 가져오는 상태에 있음을 의미
+
+*/
