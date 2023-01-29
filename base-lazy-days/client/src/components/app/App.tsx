@@ -85,3 +85,35 @@ export function App(): ReactElement {
 
   다음 강의에서는 애플리케이션 홈페이지 로드시, treatments 프리페칭에 대해 알아보자
 */
+
+/*
+
+  Prefetch Treatments
+    - Prefetch는 사용자가 현재 페이지를 보고 있는 동안, 다음 페이지를 미리 가져와서 사용자가 다음 페이지 버튼을 클릭할 때, 기다릴 필요가 없도록 했던 기능이다.
+    - 여기에서는 다른 트리거를 살펴볼텐데, 사용자가 전체 페이지를 로드할 때, Treatments 데이터를 미리 가져와 보려고 함.
+      - 홈페이지 로드 중 높은 비율로 Treatments 탭으로 이어진다는 사용자 연구 결과가 있다고 가정해보자.
+      - 이런 경우 사용자가 Treatments 탭을 클릭할 때 기다릴 필요 없도록, Treatments 데이터를 미리 가져오는 것이 좋음.
+      - Treatments 데이터는 비교적 안정적이기 때문에, Prefetching에 특히 적합함.
+      - 주식 시세와 같이 동적인 데이터를 가져오는 것이 아니기 때문에, 캐시된 데이터에 의존하더라도, 그다지 문제가 되지 않음.
+    - 물론 캐시 시간 내에 useQuery로 데이터를 호출하지 않으면, 가비지 컬렉션으로 수집된다.
+      캐시 시간 내에 캐시에 보관할 필요가 없는, 유용하지 않는 데이터를 구분하고, 이를 가비지 컬렉터에 포함함.
+      - 만약 사용자가 기본 캐시시간, 즉 5분 이내에 Treatments 탭을 로드하지 않는다면, 캐시 시간을 더 길게 지정할 수도 있음.
+
+    - PrefetchQuery는 queryClient의 메서드임. 
+      - 따라서 useQuery와 달리 클라이언트 캐시에 추가됨, useQuery는 Fetching과 Refetching 등의 작업에 필요한 쿼리를 생성하지만, prefetchQuery는 일회성이다. 
+    - queryClient 메소드이므로 queryClient를 반환해야 하며, 이를 위해 useQuery 클라이언트 hook을 사용함.
+    - usePrefetchTreatments라는 useTreatments 파일에 또 다른 훅을 만들 것인데, useTreatments, useQuery 호출과 동일한 쿼리함수와 쿼리키를 사용하기 때문에, 동일한 파일에 보관할 예정. 
+    - 요점은 Home 컴포넌트에서 usePrefetchTreatments hooks를 호출한다는 것
+      - 그렇게하면 데이터가 캐시에 미리 로드되고, 캐시 시간이 다 되기 전에 사용자가 Treatments 페이지로 이동하는 한, 캐시된 데이터를 표시할 수 있기 때문에 사용자는 서버 호출을 할 때까지 기다릴 필요가 없음.
+
+*/
+
+/*
+  
+  Prefetching Treatments는 사용자가 홈페이지를 로드할 때 시작됨.
+    1. 홈페이지를 로드할 때 queryClient.prefetchQuery를 호출하고, 이를 통해 Treatments 데이터가 캐시에 추가됨.
+    2. 그런 다음 사용자가 Treatments 페이지를 로드함, 쿼리를 처음 프리페칭한 시점을 기준으로, 캐시 시간이 초과하지 않는 경우,
+       Treatments 데이터가 캐시에 로드됨, 뿐만 아니라 useQuery는 새로운 데이터를 가져옴. 컴포넌트를 마운트하여 리페칭을 트리거했기 때문(데이터가 만료(stale)되었다는 것을 알기 때문), 그리고 리페칭 동안에는 캐시된 데이터를 사용자에게 보여줌.
+    3. 만약 캐시 시간이 지났다면, 할 수 있는 일은 많지 않음. 데이터는 가비지 컬렉션에 수집되었고, useQuery는 그동안 표시할 데이터 없이 데이터를 가져와야 함
+
+*/
