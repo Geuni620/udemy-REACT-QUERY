@@ -1,7 +1,7 @@
 // @ts-nocheck
 import dayjs from 'dayjs';
-import { Dispatch, SetStateAction, useState } from 'react';
-import { useQuery } from 'react-query';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 
 import { axiosInstance } from '../../../axiosInstance';
 import { queryKeys } from '../../../react-query/constants';
@@ -80,6 +80,30 @@ export function useAppointments(): UseAppointments {
   /** ****************** START 3: useQuery  ***************************** */
   // useQuery call for appointments for the current monthYear
 
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const nextMonthYear = getNewMonthYear(monthYear, 1);
+
+    queryClient.prefetchQuery(
+      [queryKeys.appointments, nextMonthYear.year, nextMonthYear.month],
+      () => getAppointments(nextMonthYear.year, nextMonthYear.month),
+    );
+  }, [monthYear, queryClient]);
+
+  /*
+      1. dependency Array에 queryClient와 monthYear라는 의존성 배열을 가진 useEffect가 있음.
+        - monthYear가 업데이트 될 때마다, (예를 들면 누군가가 달을 조작하는 버튼을 눌러서 2월이나 3월로 넘어갈 경우)
+        - updateMonthYear가 호출되면, 현재 monthYear 값과 한 달이라는 증가감소를 기반으로, nextMonthYear를 얻게되고, 쿼리를 프리페칭하게 됨.
+        - 쿼리 키는 이 의존성 배열이 되며, appointments, year, month로 식별되게 됨.
+        - 서버 호출, 즉 쿼리함수는 미래의 월과 연도가 포함된 getAppointments임
+      - 즉, 이 프리페치의 효과는 이 데이터로 캐시를 채워서, 사용자가 다음 달을 클릭할 때 표시되게 하는 것
+
+
+      추가로 달력의 달이 2월일 경우, 3월을 미리 prefetching 해오는데, 이때, 로딩 인디케이터가 계속 켜져있고, 데이터가 모두 stale(만료) 상태이므로
+      정확한 데이터라고 볼 수 없을 것(즉 최신 데이터라고 볼 수 없음) → 가장 최신의 데이터가 있는지 서버를 계속 확인하면서(isFetching) 사용자에게 빈 달력 대신, 프리페칭된 데이터를 보여줌.
+      
+  */
+
   // Notes:
   //    1. appointments is an AppointmentDateMap (object with days of month
   //       as properties, and arrays of appointments for that day as values)
@@ -89,11 +113,58 @@ export function useAppointments(): UseAppointments {
   const fallback = {};
 
   const { data: appointments = fallback } = useQuery(
-    queryKeys.appointments,
+    [queryKeys.appointments, monthYear.year, monthYear.month],
     () => getAppointments(monthYear.year, monthYear.month),
+
+    /*
+    {
+      keepPreviousData: true,
+    },
+
+      keepPreviousData를 true로 설정하면, 쿼리 키가 변경될 때까지, 이전 모든 데이터가 그대로 유지 됨.
+
+      다음 쿼리 키에 대한 데이터를 로드하는 동안, 자리 표시자(mocking)로 사용하는 것. 
+
+      pageNation 할 때 동일하게 적용했었는데, 그 때 단점은, 새 페이지 데이터가 준비될 때까지, 이전 페이지를 계속 봐야 한다는 것이었음.
+
+      하지만 여기서는 keepPreviousData는 적합하지 않음, 왜냐하면 달을 이동시킬 때마다 loading이 걸리고, 이전 달과, 이후 달이 겹치는 현상이 생김.
+    */
+
+    /*
+      
+      다음 페이지의 예약을 프리페칭 해 사용자가 월을 앞당길 때까지 기다리지 않아도 되게 하는 것.
+        1. 다음달 프리페칭을 구현해보자.
+        2. QueryClient 메서드를 사용
+        3. useAppointments 훅 내의 useEffect 호출에서 프리페치를 구현하는 것이 좋음.
+        4. prefetch 인수에 주의하기, getAppointments에 대한 인수와 쿼리키는, 현재의 monthYear가 아니라 다음 MonthYear와 관계가 있음.
+
+    */
   );
 
   /** ****************** END 3: useQuery  ******************************* */
 
   return { appointments, monthYear, updateMonthYear, showAll, setShowAll };
 }
+
+/*
+
+  monthYear를 업데이트할 때, 새 데이터가 로드되지 않은 이뉴는 무엇일까?
+    - 모든 쿼리에 동일한 키를 사용하기 때문.
+      - 모든 쿼리는 이 queryKeys.Appointments를 사용함.
+    - 따라서 이전 달이나 다음 달로 이동하기 위해 화살표를 클릭하면,
+      쿼리 데이터는 만료(stale) 상태이지만, 리페치(Refetch)를 트리거할 대상이 없음.
+      - 리페치를 트리거하려면 컴포넌트를 다시 마운트하거나, 
+      - 창을 다시 포커스 할 수도 있고,
+      - 리페치 함수를 수동으로 실행할 수도 있음.
+      - 또는, 자동 리페치를 수행할 수도 있음.
+        - Appointments에서도 일정 시간이 지난 후에 리페치 되도록 할 예정
+      - 예약이 새로 잡혔는지 확인하기 위해, 서버를 확인하는 것
+
+    - react-query는 위와 같은 이유로 알려진 키에 대해서만 새 데이터를 가져옴
+      - 알 수 없는 새로운 키가 있는 경우, 이러한 트리거가 필요하지 않음
+        - 리페치가 아니라 초기 페치이기 때문.
+      - 따라서, 해결책은 매월 새로운 키를 갖는 것.
+      - 전에도 언급했었지만, 항상 키를 의존성 배열로 취급해야 함, 데이터가 변경될 경우 키도 변경되도록 해야함.
+      - 새 쿼리를 만들고, 새 데이터를 가져오기 위함.
+
+*/
