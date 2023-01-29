@@ -69,3 +69,21 @@ useInfiniteQuery 작동 원리
           - 다음 페이지 페칭 / 현재 페이지든 다음이든 상관없는 일반적인 페칭을 구별하는 것이 왜 유용한가 와 같은 예시를 들 수 있음.
 
 */
+
+/*
+
+  무한 스크롤 도표
+    - 컴포넌트가 마운트 됨, 이 시점에서 useInfiniteScroll이 반환한 객체의 data 프로퍼티가 정의되어 있지 않음. 아직, 쿼리를 만들지 않았기 때문
+    - useInfiniteScroll은 쿼리 함수를 사용해서 첫 페이지를 가져옴, 쿼리 함수는 useInfiniteScroll의 첫 번째 인수고, pageParam을 인수로 받음, 따라서 첫 pageParam은 이 요소에서 우리가 기본값으로 정의한 것이 됨(defaultUrl)
+    - 해당 pageParam을 사용해서, 첫 번째 페이지를 가져오고, 반환 객체 데이터의 페이지 프로퍼티를 설정, index가 0인 배열의 첫 번째 요소를 설정함(data.pages[0]), 그리고 이게 쿼리 함수가 반환하는 값이 됨.
+    - 데이터가 반환된 후 React-query가 getNextPageParam을 실행함, 인자로 줬던 걸 기억할 거임, useInfiniteScroll의 옵션이라고 할 수 있음.
+      getNextPageParam: (lastPage, allPage) => ... / getNextPageParam함수는 lastPage와 allPages를 사용해서 pageParam을 업데이트하는 함수
+    - 다음 페이지가 있는지 확인하는 메서드는 hasNextPage임, 이 hasNextPage의 값을 결정하는 방식이 pageParam이 정의되어 있는지 아닌지에 따름
+    - 사용자가 페이지에서 스크롤을 하든, 버튼을 클릭하든, fetchNexPage 함수를 트리거하는 어떤 행동을 했다고 가정해보자.
+      - fetchNexPage 함수는 useInfiniteScroll이 반환하는 객체의 속성이다.
+      - 컴포넌트가 구조 분해된 객체에서 가져온 fetchNexPage를 호출하며, 사용자가 더 많은 데이터를 요청할 때 그렇게 함, 그리고 이걸 사용해서 다음 요소를 업데이트하거나, 데이터 프로퍼티인 페이지 배열에 다음 요소를 추가함. 
+    - 이제 또 새로운 데이터를 가지고 NextPageParam을 설정해보자(가정으로, 페이지에는 두 개의 page 데이터만 있다고 가정)
+      - getNextPageParam을 실행할 때 nextPageParam은 정의되어 있지 않음
+      - 그리고 hasNexPage로 돌아가보면, pageParams이 undefined이기 때문에 hasNextPage는 false가 된다.
+      - hasNextPage가 거짓이라는 건 작업이 완료됐다는 것, 더 이상 수집할 데이터가 없음
+*/
