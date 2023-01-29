@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 
 import type { Treatment } from '../../../../../shared/types';
 import { axiosInstance } from '../../../axiosInstance';
@@ -15,6 +15,17 @@ export function useTreatments(): Treatment[] {
   const { data = fallback } = useQuery(queryKeys.treatments, getTreatments);
 
   return data;
+}
+
+export function usePrefetchTreatments(): void {
+  const queryClient = useQueryClient();
+  queryClient.prefetchQuery(queryKeys.treatments, getTreatments);
+
+  /*
+    prefetchQuery에 사용되는 key는 캐시에서 어느 useQuery가 이 데이터를 찾아야 하는지 알려주기 때문에 매우매우 중요하다.
+    그리고 캐시에 있는 이 데이터가 이 useQuery 호출과 일치한다고 알려 주는 것임
+    이후엔 useQuery 호출과 같은 방법을 사용할 것
+  */
 }
 
 /*
