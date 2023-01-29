@@ -35,6 +35,20 @@ interface UseAppointments {
 //     2b. prefetch the appointments for adjacent monthYears
 //   3. track the state of the filter (all appointments / available appointments)
 //     3a. return the only the applicable appointments for the current monthYear
+
+/*
+  1. 첫 번째는 현재 월과연도를 추적하는 것, 이것을 사용자가 선택한 monthYear이라고 하겠음
+    - 그런 다음 monthYear를 업데이트하는 방법도 필요함.
+  2. 해당 monthYear에 대한 appointments를 반환해야 함
+    - AppointmenthDateMap 형식으로 반환하고
+    - 해당 monthYear의 이전 달과 다음 달의 appointments를 프리페칭함.
+      - 이전 달과 다음 달로 이동시 기다리지 않게 하기 위함
+  
+  3. 마지막으로 필터의 상태를 추적함.
+    - 캘린터에서 예약된 날짜를 포함해 모든 날짜를 표시하거나,
+    - 예약되지 않은 날짜만 필터링할 수 있도록 구현
+*/
+
 export function useAppointments(): UseAppointments {
   /** ****************** START 1: monthYear state *********************** */
   // get the monthYear for the current date (for default monthYear state)
@@ -50,6 +64,7 @@ export function useAppointments(): UseAppointments {
     setMonthYear((prevData) => getNewMonthYear(prevData, monthIncrement));
   }
   /** ****************** END 1: monthYear state ************************* */
+
   /** ****************** START 2: filter appointments  ****************** */
   // State and functions for filtering appointments to show all or only available
   const [showAll, setShowAll] = useState(false);
@@ -60,6 +75,7 @@ export function useAppointments(): UseAppointments {
   const { user } = useUser();
 
   /** ****************** END 2: filter appointments  ******************** */
+
   /** ****************** START 3: useQuery  ***************************** */
   // useQuery call for appointments for the current monthYear
 
