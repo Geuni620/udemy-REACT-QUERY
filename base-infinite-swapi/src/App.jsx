@@ -87,3 +87,13 @@ useInfiniteQuery 작동 원리
       - 그리고 hasNexPage로 돌아가보면, pageParams이 undefined이기 때문에 hasNextPage는 false가 된다.
       - hasNextPage가 거짓이라는 건 작업이 완료됐다는 것, 더 이상 수집할 데이터가 없음
 */
+
+/*
+  
+  양방향 스크롤
+    - 양방향 스크롤은 데이터의 중간부터 시작할 때 유용함.
+    - 그러면 시작점 이후뿐 아니라 이전의 데이터도 가져와야 됨,
+    - 모든 next 메서드들과 프로퍼티와 동일한(fetchNextPage, hasNextPage, getNextPageParam) 함수와 같은 previous를 사용하는 똑같은 함수들이 존재함.
+      - 그래서 이전 페이지에 대해서도 동일한 기능을 수행할 수 있고, 이걸 둘 다 수행하면 양방향 스크롤이 되는 것.
+
+*/
