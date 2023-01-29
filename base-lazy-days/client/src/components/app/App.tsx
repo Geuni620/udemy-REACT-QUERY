@@ -38,3 +38,11 @@ export function App(): ReactElement {
     - 사용하길 원하는 쿼리 함수를 혼동하는 위험도 없음.
 
 */
+
+/*
+
+  쿼리 함수가 에러를 발생시키면 onError 콜백이 실행되는데 React-query가 콜백에 에러 매개변수를 전달하기 때문에 다양한 방법으로 에러처리가 가능함
+    - Toast를 이용해서 하단에 나타나는 메세지를 통해 Error을 띄워보려고 함.
+    - Chakra UI에 탑재된 useToast hook을 사용함
+
+*/
