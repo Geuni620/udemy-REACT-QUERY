@@ -117,3 +117,19 @@ export function App(): ReactElement {
     3. 만약 캐시 시간이 지났다면, 할 수 있는 일은 많지 않음. 데이터는 가비지 컬렉션에 수집되었고, useQuery는 그동안 표시할 데이터 없이 데이터를 가져와야 함
 
 */
+
+// ---- 섹션 6. 쿼리 특성 II ---- //
+
+/*
+  
+    Select 옵션을 사용해보자
+      - React-query는 불필요한 연산을 줄이는 최적화를 하는데, 이를 메모이제이션이라고 함.
+        - React-query의 select 함수는 삼중 등호로 비교하며, 데이터와 함수가 모두 변경되었을 경우에만 실행 됨.
+        - 마지막으로 검색한 데이터와 동일한 데이터이고, Select 함수에도 변동이 없으면 Select 함수는 재실행하지 않는 것이 React-query의 최적화임
+        - 따라서 select 함수에는 안정적인 함수가 필요함, 매번 바뀌는 익명 함수, 즉 삼중 등호로 비교하는 함수는 실패함.
+        - 익명 함수를 안정적인 함수로 만들고 싶을 때는, "useCallback"을 사용하면 됨.
+        
+
+      [React Query Data Transformations](https://tkdodo.eu/blog/react-query-data-transformations)
+
+*/

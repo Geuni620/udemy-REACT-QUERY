@@ -1,6 +1,12 @@
 // @ts-nocheck
 import dayjs from 'dayjs';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 
 import { axiosInstance } from '../../../axiosInstance';
@@ -75,6 +81,28 @@ export function useAppointments(): UseAppointments {
   //   appointments that the logged-in user has reserved (in white)
   const { user } = useUser();
 
+  const selectFn = useCallback(
+    (data) => {
+      // TODO: write function
+      return getAvailableAppointments(data, user);
+
+      /*
+
+      이 appointments 데이터는 사실 useQuery가 select 함수를 실행할 때 얻는 data임.
+
+      selectFn함수는 익명함수임.
+        - 따라서, 언급했던 최적화를 수행하지 않는다.
+        - 최적화는 데이터의 변경여부와 함수의 변경 여부를 확인하고, 변경사항이 없으면 해당 함수를 다시 실행하지 않는 것.
+        - 이 selectFn함수는 훅에 있을 때마다 변경될 것.
+          - 이를 안정적인 함수로 만들기 위해 useCallback을 실행하겠음.
+          - dependency Array에 user를 넣어줌.
+          - 사용자가 로그인, 로그아웃 할 때마다 이 함수를 변경해야 할 것.
+
+      */
+    },
+    [user],
+  );
+
   /** ****************** END 2: filter appointments  ******************** */
 
   /** ****************** START 3: useQuery  ***************************** */
@@ -115,6 +143,19 @@ export function useAppointments(): UseAppointments {
   const { data: appointments = fallback } = useQuery(
     [queryKeys.appointments, monthYear.year, monthYear.month],
     () => getAppointments(monthYear.year, monthYear.month),
+    {
+      select: showAll ? undefined : selectFn,
+
+      /*
+      select 함수는 showAll 상태가 참일 경우에는, selectFn 함수를 호출하지 않고, 모든 데이터를 반환함.
+      showAll state가 false 일 경우에는, selectFn 함수를 실행 함.
+
+      select 함수는 원래 반환되었을 data를 가져와서, 변환한 다음 변환한 데이터를 반환함.
+      따라서, selectFn에 data가 들어가고, getAvailableAppointments를 실행함, 가능한 예약은 모두 반환하는 암시적 반환을 사용.
+      (selectFn 함수 내에서 이어서 작성)
+
+      */
+    },
 
     /*
     {
@@ -166,5 +207,12 @@ export function useAppointments(): UseAppointments {
       - 따라서, 해결책은 매월 새로운 키를 갖는 것.
       - 전에도 언급했었지만, 항상 키를 의존성 배열로 취급해야 함, 데이터가 변경될 경우 키도 변경되도록 해야함.
       - 새 쿼리를 만들고, 새 데이터를 가져오기 위함.
+
+*/
+
+/*
+
+  그럼 왜 prefetchQuery에는 useCallback을 사용하지 않는 것일까?
+    - select는 prefetch의 옵션이 아니므로 prefetch된 데이터에 추가할 수 없음.
 
 */
