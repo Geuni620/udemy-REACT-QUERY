@@ -12,14 +12,40 @@ async function getTreatments(): Promise<Treatment[]> {
 
 export function useTreatments(): Treatment[] {
   const fallback = [];
-  const { data = fallback } = useQuery(queryKeys.treatments, getTreatments);
+  const { data = fallback } = useQuery(queryKeys.treatments, getTreatments, {
+    staleTime: 60000, // 10 minutes
+
+    /*
+      refetching을 제한하기 위해 staleTime을 10분으로 설정했는데, cacheTime이 default 5분임
+      staleTime이 cacheTime을 초과한다는 건 말이 안됨.
+        - 만료된(stale) 데이터를 불러오는 동안, 캐싱(cache)에 백업된 내용이 보여질 것,
+        - 그러니 만료된 데이터(stale)보다 캐싱(cache)이 먼저 만료된다는 것은 리페칭을 실행시키는 동안 보여 줄 화면이 없다는 것.
+        - 즉, 캐싱타임도 증가시키겠음.
+    */
+    cacheTime: 900000, // 15 minutes, (doesn't make sense for staleTime to exceed)
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+
+    /*
+
+       위와 같이 설정하면, 다음과 같이 동작함.
+        - home page에 들어가면 prefetching에서 설정이 안걸려있기 때문에 fetch가 되고, update가 일어남
+        - 하지만 Treatments로 이동하면 update되지 않고, 기존의 데이터를 그대로 사용함.
+        - staff page로 가면 staleTime이 0으로 설정되어 있기 때문에 들어가서 unfocus 했다가 focus하면 update가 발생.
+
+    */
+  });
 
   return data;
 }
 
 export function usePrefetchTreatments(): void {
   const queryClient = useQueryClient();
-  queryClient.prefetchQuery(queryKeys.treatments, getTreatments);
+  queryClient.prefetchQuery(queryKeys.treatments, getTreatments, {
+    staleTime: 60000,
+    cacheTime: 900000,
+  });
 
   /*
     prefetchQuery에 사용되는 key는 캐시에서 어느 useQuery가 이 데이터를 찾아야 하는지 알려주기 때문에 매우매우 중요하다.
