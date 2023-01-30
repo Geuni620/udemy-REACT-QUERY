@@ -56,6 +56,12 @@ interface UseAppointments {
     - 예약되지 않은 날짜만 필터링할 수 있도록 구현
 */
 
+// common options for both useQuery and prefetchQuery
+const commonOptions = {
+  staleTime: 0,
+  cacheTime: 300000, // 5 minutes
+};
+
 export function useAppointments(): UseAppointments {
   /** ****************** START 1: monthYear state *********************** */
   // get the monthYear for the current date (for default monthYear state)
@@ -115,6 +121,7 @@ export function useAppointments(): UseAppointments {
     queryClient.prefetchQuery(
       [queryKeys.appointments, nextMonthYear.year, nextMonthYear.month],
       () => getAppointments(nextMonthYear.year, nextMonthYear.month),
+      commonOptions,
     );
   }, [monthYear, queryClient]);
 
@@ -145,6 +152,10 @@ export function useAppointments(): UseAppointments {
     () => getAppointments(monthYear.year, monthYear.month),
     {
       select: showAll ? undefined : selectFn,
+      ...commonOptions,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
 
       /*
       select 함수는 showAll 상태가 참일 경우에는, selectFn 함수를 호출하지 않고, 모든 데이터를 반환함.
@@ -153,6 +164,30 @@ export function useAppointments(): UseAppointments {
       select 함수는 원래 반환되었을 data를 가져와서, 변환한 다음 변환한 데이터를 반환함.
       따라서, selectFn에 data가 들어가고, getAvailableAppointments를 실행함, 가능한 예약은 모두 반환하는 암시적 반환을 사용.
       (selectFn 함수 내에서 이어서 작성)
+
+      */
+
+      /*
+
+      queryClient에 default 설정으로 리페칭을 제한시켜줬음.
+        staleTime: 600000, // 10 minutes
+        cacheTime: 900000, // 15 minutes
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+
+      
+      하지만 appointments 쿼리는 예약시스템이기 때문에 실시간 데이터가 굉장히 중요,
+      그래서 위와 같이 설정값을 오버라이드 해주었음.
+      그리고, 여기 있는 리페칭은 프리페칭에 적용되지는 않지만, staleTime과 cacheTime은 적용됨!
+
+      그래서 다음과 같이 commonOptions로 객체로 만들어주려고 함.
+      const commonOptions = {
+        staleTime: 0,
+        cacheTime: 300000, // 5 minutes
+      };
+      그리고 이 commonOptions는 prefetchQuery에 넣어주도록 함.
+      useQuery 내에서 commonOptions를 스프레드 복사 해줬음. // ...commonOptions,
 
       */
     },
