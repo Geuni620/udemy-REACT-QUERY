@@ -12,8 +12,9 @@ async function getTreatments(): Promise<Treatment[]> {
 
 export function useTreatments(): Treatment[] {
   const fallback = [];
-  const { data = fallback } = useQuery(queryKeys.treatments, getTreatments, {
-    staleTime: 60000, // 10 minutes
+  const { data = fallback } = useQuery(
+    queryKeys.treatments,
+    getTreatments,
 
     /*
       refetching을 제한하기 위해 staleTime을 10분으로 설정했는데, cacheTime이 default 5분임
@@ -22,11 +23,6 @@ export function useTreatments(): Treatment[] {
         - 그러니 만료된 데이터(stale)보다 캐싱(cache)이 먼저 만료된다는 것은 리페칭을 실행시키는 동안 보여 줄 화면이 없다는 것.
         - 즉, 캐싱타임도 증가시키겠음.
     */
-    cacheTime: 900000, // 15 minutes, (doesn't make sense for staleTime to exceed)
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-
     /*
 
        위와 같이 설정하면, 다음과 같이 동작함.
@@ -35,7 +31,19 @@ export function useTreatments(): Treatment[] {
         - staff page로 가면 staleTime이 0으로 설정되어 있기 때문에 들어가서 unfocus 했다가 focus하면 update가 발생.
 
     */
-  });
+    /*
+
+
+    src/react-query/queryClient 설정에서 위 설정을 default로 설정해줬기 때문에, 여기에서 설정(refetching setting)은 삭제하도록 함.
+
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000, // 15 minutes, (doesn't make sense for staleTime to exceed)
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+
+    */
+  );
 
   return data;
 }
@@ -43,7 +51,7 @@ export function useTreatments(): Treatment[] {
 export function usePrefetchTreatments(): void {
   const queryClient = useQueryClient();
   queryClient.prefetchQuery(queryKeys.treatments, getTreatments, {
-    staleTime: 60000,
+    staleTime: 600000,
     cacheTime: 900000,
   });
 

@@ -176,3 +176,19 @@ export function App(): ReactElement {
         
 
 */
+
+/*
+
+    전역 리페치 옵션 설정
+      - appointments를 제외한 나머지에 기본 설정으로 Refetching 옵션을 제한해보자.
+        - useProfile을 업데이트하면 프로필 정보가, 예약정보를 업데이트하면 예약정보가 변경될 것.
+        - 우리는 이 2가지를 다른 리페칭 방식으로 처리할 거임.
+        - Mutation을 만들어 데이터를 무효화시키면, 리페칭이 되는 것.
+        - 리페칭 옵션의 기본 값이 엄격한 것은 아니라, 실시간으로 리페칭을 해야하는 '사용자 프로필'과 '예약 사항'에 적합함.
+        - appointments는 이런 기본 값을 오버라이드하는 설정이 들어갈 것.
+          - 만료시간(staleTime)이 0이 되고, 캐시 시간은 제한 됨.
+          - 폴링 간격도 설정해서, 주기적으로 데이터를 서버에서 불러올 것.
+        - global options의 위치는 src/react-query/queryClient.ts임
+
+
+*/

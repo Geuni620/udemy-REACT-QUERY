@@ -19,6 +19,24 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       onError: queryErrorHandler,
+      staleTime: 600000, // 10 minutes
+      cacheTime: 900000, // 15 minutes
+
+      /*
+
+        cacheTime을 staleTime보다 더 작게 설정할 수도 있지만, 그렇게 되면 캐시가 쓸모가 없어짐.
+        
+      */
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+
+      /*
+
+        이렇게 설정하면 네트워크 호출에 굉장히 보수적인데, 대부분의 쿼리에서 리페칭을 할 만큼 데이터 변경이 충분히 많지 않다는 의미.
+
+
+      */
     },
   },
 });
