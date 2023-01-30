@@ -192,3 +192,19 @@ export function App(): ReactElement {
 
 
 */
+
+/*
+
+    54. 폴링: 간격에 따른 자동 리페칭
+      - 이제 리페칭 간격 옵션을 사용하고, 이것으로 시간 간격에 따라 리페칭 할 것.
+      - useUserAppointments 훅을 깊이 있게 다루지 않았음(주로 useAppointments를 다룸)
+        - 이 훅은 '로그인 한 사용자의 모든 예약 사항을 검색함', 사용자 페이지 화면을 위해서.
+        - useAppointments의 훅과는 다른데, 이 훅은 '모든 사용자의 예약을 검색함'. 단, 현재 월과 년도의 경우만.
+        - 반면, useUserAppointments는 로그인 한 사용자의 예약만 검색하며, 월, 년도와 상관없이 모든 사항을 검색함.
+        - 그렇다면, useUserAppointments가 리페칭 기본 값과 어울릴 수 있을까? → 그렇다.(자주 호출할 필요 없음.)
+          - 왜냐하면 React code 모르게 업데이트 될 수 없기 때문, React 코드가 트리거를 해야 어떤 변경이든 일어남.
+          - Mutation을 활용해 데이터를 무효화시키고 다시 불러오는 거죠.
+          - React client 모르게 서버에서 변경 되는 것은 appointments가 유일함.(이건 refetching 되어야함.)
+          - 이런 상황이 주기적으로 발생하도록 리페칭 간격을 사용해보겠음.(= 폴링)
+          
+*/

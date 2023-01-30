@@ -156,6 +156,12 @@ export function useAppointments(): UseAppointments {
       refetchOnMount: true,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
+      refetchInterval: 60000, // every second; not recommended for production
+
+      /*
+        의료 앱이라면 데이터 업데이트가 매 1초 단위로 필요할지 모르지만, 
+        사람들이 스파 예약을 그 정도 수준으로 들여다 볼 것 같지는 않음.
+      */
 
       /*
       select 함수는 showAll 상태가 참일 경우에는, selectFn 함수를 호출하지 않고, 모든 데이터를 반환함.
