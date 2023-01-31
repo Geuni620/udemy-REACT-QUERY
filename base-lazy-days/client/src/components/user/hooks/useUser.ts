@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 
 import type { User } from '../../../../../shared/types';
 import { axiosInstance, getJWTHeader } from '../../../axiosInstance';
@@ -28,6 +28,7 @@ interface UseUser {
 }
 
 export function useUser(): UseUser {
+  const queryClient = useQueryClient();
   const { data: user } = useQuery(queryKeys.user, () => getUser(user));
 
   /*
@@ -63,12 +64,12 @@ export function useUser(): UseUser {
   // meant to be called from useAuth
 
   function updateUser(newUser: User): void {
-    //  TODO : update the user in the query cache
+    queryClient.setQueryData(queryKeys.user, newUser);
   }
 
   // meant to be called from useAuth
   function clearUser() {
-    // TODO: reset user to null in query cache
+    queryClient.setQueryData(queryKeys.user, null);
   }
 
   return { user, updateUser, clearUser };
