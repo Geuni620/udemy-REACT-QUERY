@@ -1,11 +1,16 @@
 import { Spinner, Text } from '@chakra-ui/react';
 import { ReactElement } from 'react';
-import { useIsFetching } from 'react-query';
+import { useIsFetching, useIsMutating } from 'react-query';
 
 export function Loading(): ReactElement {
   const isFetching = useIsFetching();
+  const isMutating = useIsMutating();
 
-  const display = isFetching ? 'inherit' : 'none';
+  /*
+    이렇게하면 현재 해결되지 않은 변이 함수의 개수를 정수로 볼 수 있음.
+  */
+
+  const display = isFetching || isMutating ? 'inherit' : 'none';
 
   return (
     <Spinner
