@@ -257,3 +257,25 @@ export function useAppointments(): UseAppointments {
     - select는 prefetch의 옵션이 아니므로 prefetch된 데이터에 추가할 수 없음.
 
 */
+
+/*
+  68. 쿼리 키 접두사
+  위의 캘린더에서는 쿼리 무효화가 이루어지지만, 아래 Your Appointments에서는 이루어지지 않음.
+    - 목표는 Appointments에서 변이를 실행할 때, 모든 예약 관련 쿼리를 무효화 하는 것.
+    - 쿼리 키 접두사로 이를 수행할 수 있는데, invalidateQueries는 정확한 키가 아닌 '접두사'로 사용함.
+      - 따라서 동일한 쿼리 키 접두사로 서로 관련된 쿼리를 설정하면, 모든 쿼리를 한 번에 무효화 할 수 있음.
+      - 정확한 키로 설정하고 싶다면, exact: true로 설정하면 됨
+    - 다른 queryClient 메서드도 removeQueries와 같은 쿼리 키 접두사를 사용함.
+    
+    - 방금까지 일반적인 쿼리 키 접두사였고, Appointments에서는 사용자 예약에 대한 사용자 키를 업데이트 할 것인데, user-appointments로 된 문자열을 다음과 같은 배열로 업데이트 할 거임.
+      [queryKeys.appointments, queryKeys.user, user?.id] // For user appointments
+    - 시작은 예약에 대한 고정 문자열인 queryKeys.appointments이고, user와 user?.id가 포함 됨.
+
+    - Appointments에는 이미 쿼리 키에 대한 배열이 있음.
+      [queryKeys.appointments, queryMonthYear.year, queryMonthYear.month] // For appointments
+    - 월 및 연도로 예약을 페이지 매김 했던 것을 기억할텐데요, 연도와 월을 의존성 배열로 포함시켰고, queryKey.appointments로 시작했죠
+
+    - 따라서 쿼리를 무효화하기 위한 접두사로 queryKeys.appointments를 전달하면 이 두 가지가 모두 무효화 됨.
+      - 지난 강의에서 언급했듯이 복잡한 앱의 경우, 전체적인 일관성을 유지하기 위해 쿼리 키를 생성하는 함수를 이용함.
+      - 이 앱의 경우 예약에 대한 문자열을 사용하는 대신, 쿼리 키 객체만으로도 충분함.
+*/

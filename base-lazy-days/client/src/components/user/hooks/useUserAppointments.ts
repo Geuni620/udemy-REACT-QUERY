@@ -20,3 +20,9 @@ export function useUserAppointments(): Appointment[] {
   // TODO replace with React Query
   return [];
 }
+
+/*
+
+  해당 내용 확인하게 된다면, 강의 68. 내용 후반부 체크하기
+
+*/
