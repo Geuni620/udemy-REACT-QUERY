@@ -84,4 +84,8 @@ export function useAuth(): UseAuth {
     signup,
     signout,
   };
+
+  /*
+   - useAuth의 책임은 이러한 함수들이(user, updateUser, clearUser) 서버와 통신하도록 하는 것
+  */
 }
