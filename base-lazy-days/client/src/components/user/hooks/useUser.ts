@@ -29,7 +29,21 @@ interface UseUser {
 
 export function useUser(): UseUser {
   const queryClient = useQueryClient();
-  const { data: user } = useQuery(queryKeys.user, () => getUser(user));
+  const { data: user } = useQuery(queryKeys.user, () => getUser(user), {
+    onSuccess: (received: User | null) => {
+      if (!received) {
+        // 사용자 스토리지에 있던 사용자 정보를 지우겠다는 뜻
+        clearStoredUser();
+      } else {
+        // 해당 값으로 로컬 스토리지를 설정할 거임.
+        setStoredUser(received);
+      }
+
+      /*
+      - onSuccess는 쿼리 함수(useQuery)나 setQueryData(queryClient.setQueryData)에서 데이터를 가져오는 함수입니다, 중요한건 둘 다에서 실행되기 때문입니다
+      */
+    },
+  });
 
   /*
     기존 user의 값을 이용해서 user의 값을 업데이트하는 것
@@ -80,3 +94,15 @@ export function useUser(): UseUser {
       - useUser의 책임은 로컬 스토리지와 쿼리 캐시에서 사용자의 상태를 유지하는 것
   */
 }
+
+/*
+    59. localStorage에서 사용자 데이터 유지하기
+      - 로그인과 로그아웃은 가능하지만 로그인한 다음 페이지를 새로 고침하면 로그인이 유지되지 않습니다
+      - 이를 해결하는 방법은 user(사용자) 데이터를 로컬 스토리지에 저장하고 useUser의 useQuery가 초기 실행될 때 해당 로컬 스토리지를 초기 데이터로 사용하는 것입니다
+      - useUser의 역할에 관한 슬라이드로 돌아가서 로컬 스토리지와 관련한 두 가지 책임을 상기해봅시다
+        1. 첫 번째 역할은 초기 실행 시 로컬 스토리지에서 로드하여 페이지를 새로 고침해도 React Query가 사용자를 잃지 않도록 하는 것입니다
+      - 하지만 애초에 로컬 스토리지가 사용자 데이터로 채워져 있어야 로컬 스토리지에서 로드하는 것이 가능하므로 useQuery의 onSuccess 콜백으로 로컬 스토리지를 업데이트해야 합니다
+
+      - 기억하시겠지만, onSuccess 콜백은 useAuth 함수 작업 시 사용하는 queryClient.setQueryData 실행 이후나 쿼리 함수가 반환된 후에 실행됩니다
+      - 여기에서 로컬 스토리지를 업데이트하면 둘 중 한 방법으로 캐시도 업데이트하고 로컬 스토리지도 업데이트할 수 있습니다
+*/
