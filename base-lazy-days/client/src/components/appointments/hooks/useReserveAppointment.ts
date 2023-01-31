@@ -1,4 +1,4 @@
-import { UseMutateFunction, useMutation } from 'react-query';
+import { UseMutateFunction, useMutation, useQueryClient } from 'react-query';
 
 import { Appointment } from '../../../../../shared/types';
 import { axiosInstance } from '../../../axiosInstance';
@@ -27,9 +27,25 @@ export function useReserveAppointment(): UseMutateFunction<
 > {
   const { user } = useUser();
   const toast = useCustomToast();
+  const queryClient = useQueryClient();
 
-  const { mutate } = useMutation((appointment: Appointment) =>
-    setAppointmentUser(appointment, user?.id),
+  const { mutate } = useMutation(
+    (appointment: Appointment) => setAppointmentUser(appointment, user?.id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([queryKeys.appointments]);
+        toast({
+          title: 'You have reserved the appointment!',
+          status: 'success',
+        });
+        /*
+          여기서 어떤 쿼리 키를 무효화해야 할까?
+            - 접두사로 queryKeys 상수와 Appointments 속성이 있는 쿼리를 무효화 할 것인데,
+              이는 다음강의에서 이 접두사의 역할이 무엇인지 더 자세히 설명할 예정.
+            - 그리고 toast를 추가함, 사용자에게 피드백을 주기 위한 것.
+        */
+      },
+    },
   );
   /*
     - useMutation에는 쿼리 키가 필요하지 않음, 다시 말하지만, 캐시에 있는 쿼리와는 관련이 없음.
