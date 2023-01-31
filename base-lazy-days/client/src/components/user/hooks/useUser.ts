@@ -30,6 +30,23 @@ interface UseUser {
 export function useUser(): UseUser {
   const queryClient = useQueryClient();
   const { data: user } = useQuery(queryKeys.user, () => getUser(user), {
+    initialData: getStoredUser,
+    /*
+      60. useQuery를 위한 localStorage의 initialData
+        
+      - 페이지를 새로 고침할 때와 같이 useQuery가 초기화를 실행할 때 이 데이터가 로컬 스토리지에 정의되어 있는지 확인하는 것입니다
+      - 이를 위해 useQuery에서 initialData 옵션을 사용합니다
+      - initialData는 초기 데이터를 캐시에 추가하고 싶을 때 사용합니다
+      - 과거의 쿼리를 떠올려보죠, 페이지에서 오류가 발생하지 않게 하려면 초기 값이 필요한 때도 있었습니다
+        - 예를 들어, useTreatments나 useStaff에서 배열을 반복하는 경우, 구조 분해의 기본값으로 빈 배열을 넣을 것입니다
+        - 다음은 자리 표시자 데이터가 필요할 때입니다
+        - placeholderData 옵션을 사용해도 되긴 하지만요
+          - 두 경우 모두 캐시에 추가되지 않습니다, 
+          - 하지만 사용자의 경우 캐시에 추가하고자 하는 실제 사용자 데이터가 있으며 이는 로컬 스토리지에서 가져옵니다
+        - React Query는 쿼리 캐시 데이터를 브라우저에 유지하는 플러그인을 제공합니다
+          - 본 강의 녹화 시점에서는 모두 실험 단계에 있으므로
+          - 로컬 스토리지를 통해 데이터 보존을 설명하겠습니다
+    */
     onSuccess: (received: User | null) => {
       if (!received) {
         // 사용자 스토리지에 있던 사용자 정보를 지우겠다는 뜻
@@ -105,4 +122,11 @@ export function useUser(): UseUser {
 
       - 기억하시겠지만, onSuccess 콜백은 useAuth 함수 작업 시 사용하는 queryClient.setQueryData 실행 이후나 쿼리 함수가 반환된 후에 실행됩니다
       - 여기에서 로컬 스토리지를 업데이트하면 둘 중 한 방법으로 캐시도 업데이트하고 로컬 스토리지도 업데이트할 수 있습니다
+*/
+
+/*
+    60. useQuery를 위한 localStorage의 initialData
+      - initialData는 초기 데이터를 캐시에 추가하고 싶을 때 사용합니다
+
+
 */
