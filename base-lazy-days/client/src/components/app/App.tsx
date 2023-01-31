@@ -226,3 +226,57 @@ export function App(): ReactElement {
         - 따라서, isMutating 또는 isFetching에 표시되도록 Loading 컴포넌트를 업데이트 할 거임.
 
 */
+
+/*
+
+    57. useAuth, useUser와 useQuery
+      - useAuth 훅은 로그인과 가입, 로그아웃 기능을 제공함.
+      - useUser 훅은 React-query가 작동하는 곳, 사용자 데이터와 사용자 정보를 업데이트하는 함수가 있음.
+        - updateUser는 사용자 로그인이나 사용자 정보 업데이트를 처리하고, clearUser는 로그아웃을 처리함.
+        - useUser의 책임은 로컬 스토리지와 쿼리 캐시에서 사용자의 상태를 유지하는 거임.
+        - useAuth의 책임은 이러한 함수들이 서버로 통신하도록 하는 것.
+
+*/
+
+/*
+
+    56. React-Query와 인증 입문
+      - 인증된 앱의 Auth로 React-query를 통합하는 거임.
+      - 이번 세션에서는 어떤 조건 하에서만 활성화가 되는, 의존적 쿼리(Dependent Queries)를 학습하고 쿼리 클라이언트에 관한 몇 가지 새로운 방식을 학습하겠음.
+        - setQueryData는 실제로 캐시에 데이터를 설정하기 위함이고, removeQueries는 캐시에서 쿼리를 삭제하기 위함임
+        - 이 앱에서는 토큰이 사용자 객체에 저장되어 있음, 서버로부터 전달된 사용자 객체가 이 토큰을 담고 있고 클라이언트에서 사용했듯이 이 사용자 객체도 토큰을 담고 있음
+
+      - 누가 사용자 데이터를 소유해야할까?
+        - signIn, signOut, signUp 함수를 useAuth 훅에서 관리할까?
+        - 쿼리 캐시가 있는 useQuery는 어떨까요?
+        - 사용자 데이터에 있어서는 뭐가 정답일까요?
+        - signIn, signUp, signOut 실행 시 useAuth가 useQuery를 호출해야할까요? 아니면 Axios로 직접 호출해야할까요?
+        - 그리고 useAuth가 Provider를 써야할까요? useAuth는 로그인 정보와 데이터를 관리하는 콘텍스트를 필요로 할까요? 혹은 사용자 데이터를 react-query 캐시에 저장하면 될까요?
+
+      - React-query와 useAuth 훅의 구체적인 책임을 생각해본다면 도움이 될것
+        - React-query의 책임은 클라이언트의 서버 상태를 관리하는 것
+        - useAuth 훅의 책임은 signIn, signOut, signUp 함수를 제공하는 것, 그래서 서버에 있는 사용자를 인증할 수 있는 것.
+        - 이 두 가지는 전혀 다른 이야기임, 결론은 데이터 저장은 React-query에 하는게 맞고, 그러려면 useUser라는 특별한 훅이 필요함
+        - React-query는 데이터를 저장하고 useAuth는 지원을 할거임, 서버를 호출할 때 useAuth가 사용자 데이터를 수집하기 때문.
+          - 서버는 useAuth의 signIn, signUp 호출 시 데이터를 반환함, 우리가 할 일은 useUser의 함수로 이런 내용을 캐시에 추가하는 것
+        
+        - useUser 훅의 역할에 관해 이야기해보자
+          - 이건 React-query로부터 사용자 데이터를 반환할 책임이 있음, 우리가 쿼리 캐시에 사용자 데이터를 저장한다는 걸 잊지말 것
+          - 그리고 useUser 훅은 객체를 반환함, 객체 항목 중 하나가 이 사용자 데이터가 되는 것.
+          - useUser라는 이름의 훅에서 알 수 있듯이, user 데이터를 반환하는 거임.
+          - localStorage의 데이터를 로딩해서 초기 설정을 할 거임, 사용자가 페이지를 새로 고침할 때 데이터를 유지하는 방법임
+            - 특히 변이가 일어나면 서버의 사용자 데이터가 변경될 거임, 그리고 React useQuery 훅을 사용해서, 사용자 데이터를 항상 최신으로 유지해야함.
+            - useQuery 인스턴스의 쿼리 함수는 로그인 한 사용자의 ID와 함께 서버에 요청을 보낼 거임, 그럼 서버가 그 사용자에 관한 데이터를 돌려보내줌.
+              - 만약 로그인 한 사용자가 없다면 쿼리 함수는 null을 반환할 거임, 
+          - useUser의 역할은 우리 앱의 특정 인스턴스까지 로그인한 사용자를 추적하는 거임, 그리고 정보다 업데이트되면 즉, 접속을 했다거나 접속에서 나갔다거나 혹은 사용자가 스스로 업데이트를 했다거나 이럴 경우 setQueryData로 직접 React-query 캐시를 업데이트 함, 그리고 localStorage도 업데이트 함.
+            - localStorage 업데이트는 onSuccess 콜백에서 진행되며 useQuery까지 업데이트 함, 그리고 onSuccess 콜백은 setQueryData와 쿼리 함수가 실행된 이후에 실행 됨.
+          - 어떤 방식으로든 쿼리 캐시는 업데이트가 되는데 setQueryData를 통해 업데이트 되거나 쿼리 함수가 실행될 때 생긴 변이 뒤에 업데이트 될 수 있음.
+        
+        - 사용자 데이터를 Auth Provider에 저장할 수는 없을까?
+          - 당연히 가능, 흔히들 옵션으로 되어있음, 단점이라면 이미 복잡한 시스템에 복잡함을 더한다는 것, React Query 캐시에서 분리된 Provider 관리도 포함
+          - 불필요한 데이터가 생긴다는 것도 단점.
+          - 사용자 변이를 허용한다면 그 사용자 데이터를 React Query에 보관하고 싶을 텐데 Auth Provider에도 사용자 데이터를 입력해야함
+          - 새로운 애플리케이션을 개발한다면 당연히 React Query 캐시에 사용자 데이터를 저장하고 Auth Provider는 잊고 싶음
+          - 하지만 Legacy project에서는 Auth Provider를 관리하고 React Query 캐시를 필요 위치에 추가하는 것이 더 합당함.
+
+*/
