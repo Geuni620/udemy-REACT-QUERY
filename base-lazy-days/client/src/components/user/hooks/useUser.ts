@@ -101,6 +101,7 @@ export function useUser(): UseUser {
   // meant to be called from useAuth
   function clearUser() {
     queryClient.setQueryData(queryKeys.user, null);
+    queryClient.removeQueries('user-appointments');
   }
 
   return { user, updateUser, clearUser };
@@ -129,4 +130,17 @@ export function useUser(): UseUser {
       - initialData는 초기 데이터를 캐시에 추가하고 싶을 때 사용합니다
 
 
+*/
+
+/*
+  62. 쿼리 클라이언트 removeQueries 메서드
+    - 왜 user 데이터에 removeQueries를 사용하지 않고, setQueryData에 null을 사용하는지 궁금하시죠
+    - 사용자 데이터를 변경해서 onSucess 콜백을 발생시킬 때 onSucess 콜백이 로컬 스토리지에 데이터를 유지하며 setQueryData가 onSucess를 발생시키기 때문이에요.
+    - 다시 말해 onSucess는 setQueryData 다음에 실행되고 removeQueries 다음에는 실행되지 않습니다
+      - 따라서 user 데이터에 removeQueries가 아닌 setQueryData를 사용하는 게 중요합니다
+      - userAppointments는 useUser에 onSuccess를 필요하지 않음.
+
+
+      - 사용자가 로그아웃했을 때 useAuth에서 호출한 clearUser가 쿼리 데이터를 null로 설정해서 onSucess를 트리거할 뿐만 아니라, clearStoredUser()를 통해 로컬 스토리지로부터 사용자를 지우죠
+      - 그래서 clearStoredUser에 removeQueries를 추가로 실행해야 합니다
 */
