@@ -280,3 +280,11 @@ export function App(): ReactElement {
           - 하지만 Legacy project에서는 Auth Provider를 관리하고 React Query 캐시를 필요 위치에 추가하는 것이 더 합당함.
 
 */
+
+/*
+
+  70. 변이(mutation) 응답으로 사용자와 쿼리 캐시 업데이트하기
+      - 
+
+
+*/
