@@ -10,12 +10,16 @@ import {
   setStoredUser,
 } from '../../../user-storage';
 
-async function getUser(user: User | null): Promise<User | null> {
+async function getUser(
+  user: User | null,
+  signal: AbortSignal,
+): Promise<User | null> {
   if (!user) return null;
   const { data }: AxiosResponse<{ user: User }> = await axiosInstance.get(
     `/user/${user.id}`,
     {
       headers: getJWTHeader(user),
+      signal: 
     },
   );
   return data.user;
@@ -29,9 +33,24 @@ interface UseUser {
 
 export function useUser(): UseUser {
   const queryClient = useQueryClient();
-  const { data: user } = useQuery(queryKeys.user, () => getUser(user), {
-    initialData: getStoredUser,
-    /*
+  const { data: user } = useQuery(
+    queryKeys.user,
+    ({ signal }) => getUser(user, signal),
+      /*
+      사용자 쿼리 키를 지닌 useQuery가 AbortController를 관리합니다
+      이 컨트롤러는 쿼리 함수인 getUser에 전달되는 신호를 생성하고
+      getUser는 해당 신호를 Axios에 전달하죠
+      따라서 이제 Axios는 해당 신호에 연결된 상태입니다
+      취소 이벤트에 대하여 해당 신호를 수신하는 것이죠
+      다음 강의에서는 쿼리 클라이언트의 cancelQuery 메서드를 소개하겠습니다
+      cancelQuery를 AbortController를 관리하는 동일한 키에 실행하는 경우 AbortController에 취소 이벤트를 전달하게 됩니다
+      즉 예를 들면 이 Axios 호출 등 신호를 청취하는 모든 객체는 해당 취소 이벤트를 수신하고 중단할 것입니다
+      */
+
+
+    {
+      initialData: getStoredUser,
+      /*
       60. useQuery를 위한 localStorage의 initialData
         
       - 페이지를 새로 고침할 때와 같이 useQuery가 초기화를 실행할 때 이 데이터가 로컬 스토리지에 정의되어 있는지 확인하는 것입니다
@@ -47,20 +66,21 @@ export function useUser(): UseUser {
           - 본 강의 녹화 시점에서는 모두 실험 단계에 있으므로
           - 로컬 스토리지를 통해 데이터 보존을 설명하겠습니다
     */
-    onSuccess: (received: User | null) => {
-      if (!received) {
-        // 사용자 스토리지에 있던 사용자 정보를 지우겠다는 뜻
-        clearStoredUser();
-      } else {
-        // 해당 값으로 로컬 스토리지를 설정할 거임.
-        setStoredUser(received);
-      }
+      onSuccess: (received: User | null) => {
+        if (!received) {
+          // 사용자 스토리지에 있던 사용자 정보를 지우겠다는 뜻
+          clearStoredUser();
+        } else {
+          // 해당 값으로 로컬 스토리지를 설정할 거임.
+          setStoredUser(received);
+        }
 
-      /*
+        /*
       - onSuccess는 쿼리 함수(useQuery)나 setQueryData(queryClient.setQueryData)에서 데이터를 가져오는 함수입니다, 중요한건 둘 다에서 실행되기 때문입니다
       */
+      },
     },
-  });
+  );
 
   /*
     기존 user의 값을 이용해서 user의 값을 업데이트하는 것
