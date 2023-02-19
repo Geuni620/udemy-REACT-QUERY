@@ -3,11 +3,16 @@ import { screen } from '@testing-library/react';
 // import { rest } from 'msw';
 // import { defaultQueryClientOptions } from '../../../react-query/queryClient';
 // import { server } from '../../../mocks/server';
-// import { renderWithClient } from '../../../test-utils';
+import { renderWithQueryClient } from '../../../test-utils/index';
 import { AllStaff } from '../AllStaff';
 
-test('renders response from query', () => {
-  // write test here
+test('renders response from query', async () => {
+  renderWithQueryClient(<AllStaff />);
+  const staffName = await screen.findAllByRole('heading', {
+    name: /Divya|Sandra|Michael|Mateo/i,
+  });
+
+  expect(staffName).toHaveLength(4);
 });
 
 test('handles query error', async () => {
