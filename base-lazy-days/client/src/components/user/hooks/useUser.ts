@@ -18,8 +18,8 @@ async function getUser(
   const { data }: AxiosResponse<{ user: User }> = await axiosInstance.get(
     `/user/${user.id}`,
     {
+      signal, // abortSignal from React Query
       headers: getJWTHeader(user),
-      signal: 
     },
   );
   return data.user;
@@ -36,7 +36,7 @@ export function useUser(): UseUser {
   const { data: user } = useQuery(
     queryKeys.user,
     ({ signal }) => getUser(user, signal),
-      /*
+    /*
       사용자 쿼리 키를 지닌 useQuery가 AbortController를 관리합니다
       이 컨트롤러는 쿼리 함수인 getUser에 전달되는 신호를 생성하고
       getUser는 해당 신호를 Axios에 전달하죠
@@ -46,7 +46,6 @@ export function useUser(): UseUser {
       cancelQuery를 AbortController를 관리하는 동일한 키에 실행하는 경우 AbortController에 취소 이벤트를 전달하게 됩니다
       즉 예를 들면 이 Axios 호출 등 신호를 청취하는 모든 객체는 해당 취소 이벤트를 수신하고 중단할 것입니다
       */
-
 
     {
       initialData: getStoredUser,
